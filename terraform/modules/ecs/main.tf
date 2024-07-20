@@ -31,8 +31,8 @@ resource "aws_ecs_task_definition" "app" {
     {
       name      = var.name_ecs
       image     = var.app_image
-      cpu       = var.fargate_cpu
-      memory    = var.fargate_memory
+      cpu       = tonumber(var.fargate_cpu)
+      memory    = tonumber(var.fargate_memory)
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -43,8 +43,8 @@ resource "aws_ecs_task_definition" "app" {
       }
       portMappings = [
         {
-          containerPort = var.app_port
-          hostPort      = var.app_port
+          containerPort = tonumber(var.app_port)
+          hostPort      = tonumber(var.app_port)
         }
       ]
       environment = [

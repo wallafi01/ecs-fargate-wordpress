@@ -37,8 +37,8 @@ module "ecs_app" {
   app_port                     = 80
   app_count                    = 1
   health_check_path            = "/"
-  fargate_cpu                  = "1024"
-  fargate_memory               = "2048"
+  fargate_cpu                  = 1024
+  fargate_memory               = 2048
   aws_region                   = var.region
   az_count                     = "2"
   subnets                      = module.vpc.public_subnets

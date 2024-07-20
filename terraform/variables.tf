@@ -40,3 +40,13 @@ variable "name_rds" {
   type = string
 }
 
+variable "fargate_cpu" {
+   type = number 
+}
+variable "fargate_cpu" {
+    type = number
+}
+
+variable "app_port" {
+    type = number
+}
