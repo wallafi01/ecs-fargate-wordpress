@@ -1,5 +1,9 @@
 name: Deploy ECS Fargate
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
 #   push:
 #     branches:
@@ -65,7 +69,7 @@ jobs:
           terraform apply -auto-approve
         fi
       working-directory: ./terraform
-      
+
     - name: Terraform Workspace Output
       run: terraform output
       working-directory: ./terraform
