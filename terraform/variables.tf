@@ -43,7 +43,7 @@ variable "name_rds" {
 variable "fargate_cpu" {
    type = number 
 }
-variable "fargate_cpu" {
+variable "fargate_memory" {
     type = number
 }
 
