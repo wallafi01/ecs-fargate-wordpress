@@ -51,6 +51,7 @@ jobs:
       working-directory: ./terraform
 
     - name: Terraform Plan
+      working-directory: ./terraform    
       run: |
         if [ "${{ github.event.inputs.environment }}" == "hom" ]; then
           terraform plan -var-file="hom.tfvars"
@@ -59,7 +60,7 @@ jobs:
         else
           terraform plan
         fi
-      working-directory: ./terraform
+
 
     - name: Terraform Apply
       run: |
