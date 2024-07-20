@@ -4,19 +4,19 @@ resource "aws_ecs_cluster" "main" {
   name = var.name_ecs
 }
 
-data "template_file" "ecs_app" {
-  template = file("./modules/ecs/templates/ecs/ecs_app.json.tpl")
+# data "template_file" "ecs_app" {
+#   template = file("./modules/ecs/templates/ecs/ecs_app.json.tpl")
 
-  vars = {
-    name_app       = var.name_ecs
-    app_image      = var.app_image
-    app_port       = var.app_port
-    fargate_cpu    = var.fargate_cpu
-    fargate_memory = var.fargate_memory
-    aws_region     = var.aws_region
-    db_host        = var.db_host
-  }
-}
+#   vars = {
+#     name_app       = var.name_ecs
+#     app_image      = var.app_image
+#     app_port       = var.app_port
+#     fargate_cpu    = var.fargate_cpu
+#     fargate_memory = var.fargate_memory
+#     aws_region     = var.aws_region
+#     db_host        = var.db_host
+#   }
+# }
 
 resource "aws_ecs_task_definition" "app" {
   family                   = "${var.name_ecs}-task"
@@ -25,7 +25,48 @@ resource "aws_ecs_task_definition" "app" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
-  container_definitions    = data.template_file.ecs_app.rendered
+  #container_definitions    = data.template_file.ecs_app.rendered
+
+  container_definitions = jsonencode([
+    {
+      name      = var.name_ecs
+      image     = var.app_image
+      cpu       = var.fargate_cpu
+      memory    = var.fargate_memory
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = "/ecs/${var.name_ecs}"
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "ecs"
+        }
+      }
+      portMappings = [
+        {
+          containerPort = var.app_port
+          hostPort      = var.app_port
+        }
+      ]
+      environment = [
+        {
+          name  = "WORDPRESS_DB_HOST"
+          value = var.db_host
+        },
+        {
+          name  = "WORDPRESS_DB_USER"
+          value = "wordpress"
+        },
+        {
+          name  = "WORDPRESS_DB_PASSWORD"
+          value = "wordpress"
+        },
+        {
+          name  = "WORDPRESS_DB_NAME"
+          value = "wordpress"
+        }
+      ]
+    }
+  ])
 
   lifecycle {
     ignore_changes = [
