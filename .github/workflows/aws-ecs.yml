@@ -10,10 +10,9 @@ on:
 #       - main  
   workflow_dispatch:
     inputs:
-      workspace:
+      environment:
         description: 'Selecionar o ambiente'
         required: true
-        default: 'hom'
         type: choice
         options:
           - dev
@@ -43,18 +42,18 @@ jobs:
 
     - name: Terraform Create Workspace if Not Exists
       run: |
-        terraform workspace list | grep ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
+        terraform workspace list | grep ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
       working-directory: ./terraform
 
     - name: Terraform Select Workspace
-      run: terraform workspace select ${{ github.event.inputs.workspace }}
+      run: terraform workspace select ${{ github.event.inputs.environment }}
       working-directory: ./terraform
 
     - name: Terraform Plan
       run: |
-        if [ "${{ github.event.inputs.workspace }}" == "hom" ]; then
+        if [ "${{ github.event.inputs.environment }}" == "hom" ]; then
           terraform plan -var-file="hom.tfvars"
-        elif [ "${{ github.event.inputs.workspace }}" == "prod" ]; then
+        elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
           terraform plan -var-file="prod.tfvars"
         else
           terraform plan
@@ -63,9 +62,9 @@ jobs:
 
     - name: Terraform Apply
       run: |
-        if [ "${{ github.event.inputs.workspace }}" == "hom" ]; then
+        if [ "${{ github.event.inputs.environment }}" == "hom" ]; then
           terraform apply -var-file="hom.tfvars" -auto-approve
-        elif [ "${{ github.event.inputs.workspace }}" == "prod" ]; then
+        elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
           terraform apply -var-file="prod.tfvars" -auto-approve
         else
           terraform apply -auto-approve

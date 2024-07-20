@@ -6,10 +6,8 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      workspace:
-        description: 'The Terraform workspace to use'
+      environment:
         required: true
-        default: 'hom'
         type: choice
         options:
           - dev
@@ -39,18 +37,18 @@ jobs:
 
     - name: Terraform Create Workspace if Not Exists
       run: |
-        terraform workspace list | grep ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
+        terraform workspace list | grep ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
       working-directory: ./terraform
 
     - name: Terraform Select Workspace
-      run: terraform workspace select ${{ github.event.inputs.workspace }}
+      run: terraform workspace select ${{ github.event.inputs.environment }}
       working-directory: ./terraform
 
     - name: Terraform Destroy
       run: |
-        if [ "${{ github.event.inputs.workspace }}" == "hom" ]; then
+        if [ "${{ github.event.inputs.environment }}" == "hom" ]; then
           terraform destroy -var-file="hom.tfvars" -auto-approve
-        elif [ "${{ github.event.inputs.workspace }}" == "prod" ]; then
+        elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
           terraform destroy -var-file="prod.tfvars" -auto-approve
         else
           terraform destroy -auto-approve
