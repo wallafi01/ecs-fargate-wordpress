@@ -1,0 +1,68 @@
+name: Destroy Terraform Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: 'The Terraform workspace to use'
+        required: true
+        default: 'hom'
+        type: choice
+        options:
+          - dev
+          - hom
+          - prod
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1      
+
+    - name: Terraform init
+      run: terraform init -backend-config="bucket=${{ secrets.AWS_BUCKET_NAME }}" -backend-config="key=${{ secrets.AWS_BUCKET_FILE }}"
+      working-directory: ./terraform
+
+    - name: Terraform Create Workspace if Not Exists
+      run: |
+        terraform workspace list | grep ${{ github.event.inputs.workspace }} || terraform workspace new ${{ github.event.inputs.workspace }}
+      working-directory: ./terraform
+
+    - name: Terraform Select Workspace
+      run: terraform workspace select ${{ github.event.inputs.workspace }}
+      working-directory: ./terraform
+
+    - name: Terraform Plan Destroy
+      run: |
+        if [ "${{ github.event.inputs.workspace }}" == "hom" ]; then
+          terraform plan -destroy -var-file="hom.tfvars"
+        elif [ "${{ github.event.inputs.workspace }}" == "prod" ]; then
+          terraform plan -destroy -var-file="prod.tfvars"
+        else
+          terraform plan -destroy
+        fi
+      working-directory: ./terraform
+
+    - name: Terraform Destroy
+      run: |
+        if [ "${{ github.event.inputs.workspace }}" == "hom" ]; then
+          terraform destroy -var-file="hom.tfvars" -auto-approve
+        elif [ "${{ github.event.inputs.workspace }}" == "prod" ]; then
+          terraform destroy -var-file="prod.tfvars" -auto-approve
+        else
+          terraform destroy -auto-approve
+        fi
+      working-directory: ./terraform
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
