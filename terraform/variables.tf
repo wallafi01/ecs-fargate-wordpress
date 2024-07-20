@@ -40,7 +40,3 @@ variable "name_rds" {
   type = string
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  default     = "terraform-state-wp-01"
-}

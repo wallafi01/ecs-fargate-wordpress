@@ -2,11 +2,6 @@ locals {
   environment = terraform.workspace
 }
 
-module "remote_backend" {
-  source              = "./modules/backend"
-  bucket_name         = "${var.bucket_name}-${local.environment}"
-
-}
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"

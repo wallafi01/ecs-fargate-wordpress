@@ -26,6 +26,12 @@ resource "aws_ecs_task_definition" "app" {
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
   container_definitions    = data.template_file.ecs_app.rendered
+
+  lifecycle {
+    ignore_changes = [
+      container_definitions,
+    ]
+  }
 }
 
 resource "aws_ecs_service" "main" {
